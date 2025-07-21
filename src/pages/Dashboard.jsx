@@ -938,6 +938,7 @@ function DashboardGraph() {
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [mountedTabs, setMountedTabs] = useState({ dashboard: true, reporting: true });
   const { metrics, loading, error } = useAdminMetrics();
   const reportingMetrics = useReportingMetrics();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -963,7 +964,13 @@ export default function Dashboard() {
             {tabs.map(tab => (
               <button
                 key={tab.key}
-                onClick={() => { setActiveTab(tab.key); setSidebarOpen(false); }}
+                onClick={() => {
+                  setActiveTab(tab.key);
+                  if (!mountedTabs[tab.key]) {
+                    setMountedTabs(prev => ({ ...prev, [tab.key]: true }));
+                  }
+                  setSidebarOpen(false);
+                }}
                 className={`text-left px-4 py-2 rounded-lg font-semibold transition-all duration-200 ${activeTab === tab.key ? 'bg-gradient-to-r from-blue-500 to-purple-400 text-white shadow' : 'text-blue-700 hover:bg-blue-100'}`}
               >
                 {tab.label}
@@ -982,8 +989,8 @@ export default function Dashboard() {
       <Sidebar />
       {/* Main Content */}
       <main className="flex-1 p-2 sm:p-4 md:p-10 overflow-y-auto h-full md:h-screen max-w-full w-full">
-        {activeTab === 'dashboard' && (
-          <div className="animate-fade-in">
+        {mountedTabs.dashboard && (
+          <div className={`animate-fade-in ${activeTab === 'dashboard' ? '' : 'hidden'}`}>
             <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-blue-700">Dashboard Overview</h1>
             <DashboardGraph />
             {loading ? (
@@ -1020,33 +1027,33 @@ export default function Dashboard() {
             </div>
           </div>
         )}
-        {activeTab === 'country' && (
-          <div className="animate-fade-in">
+        {mountedTabs.country && (
+          <div className={`animate-fade-in ${activeTab === 'country' ? '' : 'hidden'}`}>
             <CountryCRUD />
           </div>
         )}
-        {activeTab === 'region' && (
-          <div className="animate-fade-in">
+        {mountedTabs.region && (
+          <div className={`animate-fade-in ${activeTab === 'region' ? '' : 'hidden'}`}>
             <RegionCRUD />
           </div>
         )}
-        {activeTab === 'transport' && (
-          <div className="animate-fade-in">
+        {mountedTabs.transport && (
+          <div className={`animate-fade-in ${activeTab === 'transport' ? '' : 'hidden'}`}>
             <TransportTypeCRUD />
           </div>
         )}
-        {activeTab === 'package' && (
-          <div className="animate-fade-in">
+        {mountedTabs.package && (
+          <div className={`animate-fade-in ${activeTab === 'package' ? '' : 'hidden'}`}>
             <PackageTypeCRUD />
           </div>
         )}
-        {activeTab === 'id' && (
-          <div className="animate-fade-in">
+        {mountedTabs.id && (
+          <div className={`animate-fade-in ${activeTab === 'id' ? '' : 'hidden'}`}>
             <IDTypeCRUD />
           </div>
         )}
-        {activeTab === 'reporting' && (
-          <div className="animate-fade-in">
+        {mountedTabs.reporting && (
+          <div className={`animate-fade-in ${activeTab === 'reporting' ? '' : 'hidden'}`}>
             <h1 className="text-2xl font-bold mb-4 text-blue-700">Reporting Metrics</h1>
             {reportingMetrics.loading ? (
               <div className="text-blue-500">Loading reporting metrics...</div>
