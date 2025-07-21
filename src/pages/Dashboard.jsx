@@ -940,36 +940,58 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const { metrics, loading, error } = useAdminMetrics();
   const reportingMetrics = useReportingMetrics();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Responsive sidebar toggle
+  function Sidebar() {
+    return (
+      <>
+        {/* Mobile menu button */}
+        <button
+          className="md:hidden fixed top-4 left-4 z-40 bg-white/90 border border-blue-100 rounded-lg shadow p-2 focus:outline-none"
+          onClick={() => setSidebarOpen(o => !o)}
+          aria-label="Open sidebar"
+        >
+          <svg className="w-6 h-6 text-blue-700" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" /></svg>
+        </button>
+        {/* Sidebar */}
+        <aside className={`fixed md:static top-0 left-0 h-full w-64 bg-white/90 border-r border-blue-100 shadow-lg flex flex-col py-8 px-4 z-30 transition-transform duration-300 md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}
+          style={{ minHeight: '100vh' }}
+        >
+          <h2 className="text-2xl font-bold text-blue-700 mb-8 text-center">Verlo Admin</h2>
+          <nav className="flex flex-col gap-2">
+            {tabs.map(tab => (
+              <button
+                key={tab.key}
+                onClick={() => { setActiveTab(tab.key); setSidebarOpen(false); }}
+                className={`text-left px-4 py-2 rounded-lg font-semibold transition-all duration-200 ${activeTab === tab.key ? 'bg-gradient-to-r from-blue-500 to-purple-400 text-white shadow' : 'text-blue-700 hover:bg-blue-100'}`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </nav>
+        </aside>
+        {/* Overlay for mobile */}
+        {sidebarOpen && <div className="fixed inset-0 bg-black/30 z-20 md:hidden" onClick={() => setSidebarOpen(false)} />}
+      </>
+    );
+  }
 
   return (
-    <div className="min-h-screen flex bg-gradient-to-br from-blue-50 to-purple-100">
-      {/* Sidebar */}
-      <aside className="w-64 h-screen sticky top-0 left-0 bg-white/90 border-r border-blue-100 shadow-lg flex flex-col py-8 px-4 z-30">
-        <h2 className="text-2xl font-bold text-blue-700 mb-8 text-center">Verlo Admin</h2>
-        <nav className="flex flex-col gap-2">
-          {tabs.map(tab => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`text-left px-4 py-2 rounded-lg font-semibold transition-all duration-200 ${activeTab === tab.key ? 'bg-gradient-to-r from-blue-500 to-purple-400 text-white shadow' : 'text-blue-700 hover:bg-blue-100'}`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </nav>
-      </aside>
+    <div className="min-h-screen flex flex-col md:flex-row bg-gradient-to-br from-blue-50 to-purple-100">
+      <Sidebar />
       {/* Main Content */}
-      <main className="flex-1 p-10 overflow-y-auto h-screen">
+      <main className="flex-1 p-2 sm:p-4 md:p-10 overflow-y-auto h-full md:h-screen max-w-full w-full">
         {activeTab === 'dashboard' && (
           <div className="animate-fade-in">
-            <h1 className="text-3xl font-bold mb-6 text-blue-700">Dashboard Overview</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-blue-700">Dashboard Overview</h1>
             <DashboardGraph />
             {loading ? (
               <div className="text-blue-500">Loading metrics...</div>
             ) : error ? (
               <div className="text-red-500">{error}</div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
                 <div className="bg-white rounded-xl shadow p-6 flex flex-col items-center justify-center">
                   <span className="text-4xl font-bold text-blue-600">{metrics.totalUsers?.total_users ?? '-'}</span>
                   <span className="text-gray-500">Total Users</span>

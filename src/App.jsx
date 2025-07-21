@@ -3,6 +3,9 @@ import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-route
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import React from 'react';
+import { getValidAccessToken } from './services/auth';
+import { useEffect, useState } from 'react';
+import { Navigate } from 'react-router-dom';
 
 function Home() {
   const navigate = useNavigate();
@@ -10,7 +13,9 @@ function Home() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-400 via-purple-300 to-pink-200 animate-fade-in">
       <div className="text-center p-10 bg-white/80 rounded-3xl shadow-2xl border border-blue-100 animate-slide-up">
         <h1 className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 via-purple-600 to-pink-500 mb-4 drop-shadow animate-fade-in-delay">Welcome to Verlo Dashboard</h1>
-        <p className="text-lg text-gray-700 mb-8 animate-fade-in-delay">Your modern, beautiful dashboard starter with React, Vite, and TailwindCSS.</p>
+        <p className="text-lg text-gray-700 mb-8 animate-fade-in-delay">
+          The Verlo Dashboard is your all-in-one platform for managing users, trips, packages, and reporting. Effortlessly handle country, region, transport, and ID types, visualize key business metrics, and gain actionable insights—all in a secure, intuitive interface designed for productivity and clarity.
+        </p>
         <button
           onClick={() => navigate('/dashboard')}
           className="px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-pink-500 text-white font-bold rounded-lg shadow-lg transition-all duration-200 transform hover:-translate-y-1 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-400 animate-bounce"
@@ -34,12 +39,36 @@ function Home() {
   );
 }
 
+function PrivateRoute({ children }) {
+  const [checking, setChecking] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    async function check() {
+      const token = await getValidAccessToken();
+      if (mounted) setIsAuthenticated(!!token);
+      setChecking(false);
+    }
+    check();
+    return () => { mounted = false; };
+  }, []);
+
+  if (checking) return <div className="text-blue-500 p-8">Checking authentication...</div>;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  return children;
+}
+
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/login" element={<Login />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/dashboard" element={
+          <PrivateRoute>
+            <Dashboard />
+          </PrivateRoute>
+        } />
         <Route path="/" element={<Home />} />
       </Routes>
     </Router>
