@@ -187,7 +187,14 @@ function renderMetricValue(value) {
 }
 
 function formatKey(key) {
-  return key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  if (key === 'dauWauMau') return 'DAU/WAU/MAU';
+
+  const withSpaces = key
+    .replace(/_/g, ' ') // snake_case to spaces
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2'); // camelCase to spaces
+
+  // Title Case every word
+  return withSpaces.replace(/\b\w/g, l => l.toUpperCase());
 }
 
 function CountryCRUD() {
@@ -1052,31 +1059,43 @@ export default function Dashboard() {
             <IDTypeCRUD />
           </div>
         )}
-        {mountedTabs.reporting && (
-          <div className={`animate-fade-in ${activeTab === 'reporting' ? '' : 'hidden'}`}>
+        {activeTab === 'reporting' && (
+          <div className="animate-fade-in">
             <h1 className="text-2xl font-bold mb-4 text-blue-700">Reporting Metrics</h1>
             {reportingMetrics.loading ? (
               <div className="text-blue-500">Loading reporting metrics...</div>
             ) : reportingMetrics.error ? (
               <div className="text-red-500">{reportingMetrics.error}</div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full bg-white rounded-2xl shadow-2xl border border-blue-100">
-                  <thead className="bg-gradient-to-r from-blue-100 to-purple-100 sticky top-0 z-20">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-blue-700 text-lg font-bold tracking-wide rounded-tl-2xl">Metric</th>
-                      <th className="px-6 py-3 text-left text-blue-700 text-lg font-bold tracking-wide rounded-tr-2xl">Value</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {Object.entries(reportingMetrics.data).map(([key, value], i) => (
-                      <tr key={key} className={i % 2 === 0 ? 'bg-white' : 'bg-blue-50 hover:bg-blue-100 transition'}>
-                        <td className="px-6 py-3 font-semibold text-blue-900 whitespace-nowrap border-b border-blue-100">{formatKey(key)}</td>
-                        <td className="px-6 py-3 border-b border-blue-100 align-top">{renderMetricValue(value)}</td>
+              <div className="bg-white rounded-2xl shadow-2xl border border-blue-100">
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gradient-to-r from-blue-100 to-purple-100">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-blue-700 text-lg font-bold tracking-wide rounded-tl-2xl">Metric</th>
+                        <th className="px-6 py-3 text-left text-blue-700 text-lg font-bold tracking-wide rounded-tr-2xl">Value</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {Object.entries(reportingMetrics.data).map(([key, value], i) => (
+                        <tr key={key} className={i % 2 === 0 ? 'bg-white' : 'bg-blue-50 hover:bg-blue-100 transition'}>
+                          <td className="px-6 py-3 font-semibold text-blue-900 whitespace-nowrap border-b border-blue-100">{formatKey(key)}</td>
+                          <td className="px-6 py-3 border-b border-blue-100 align-top">{renderMetricValue(value)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {/* Mobile Card View */}
+                <div className="block md:hidden p-4 space-y-4">
+                  {Object.entries(reportingMetrics.data).map(([key, value], i) => (
+                    <div key={key} className={`p-4 rounded-lg shadow ${i % 2 === 0 ? 'bg-white' : 'bg-blue-50'}`}>
+                      <div className="font-bold text-blue-800 text-lg">{formatKey(key)}</div>
+                      <div className="mt-2 text-gray-800">{renderMetricValue(value)}</div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>
