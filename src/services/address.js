@@ -49,3 +49,7 @@ export const createIDType = (data) => authRequest('post', '/api/users/id-types/'
 export const updateIDType = (id, data) => authRequest('put', `/api/users/id-types/${id}/`, data); // expects { name, description }
 export const patchIDType = (id, data) => authRequest('patch', `/api/users/id-types/${id}/`, data);
 export const deleteIDType = (id) => authRequest('delete', `/api/users/id-types/${id}/`); 
+
+// Users
+export const fetchUsers = (page = 1) => authRequest('get', `/api/users/users/?page=${page}`);
+export const updateUserIdentityStatus = (id, status) => authRequest('patch', `/api/users/users/${id}/`, { is_identity_verified: status }); 
